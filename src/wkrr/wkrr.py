@@ -161,7 +161,7 @@ def run_wkrr(X_train,
 
         pred = weighted_krr(X_train, y_train, X_test, p_values=p_values, **best_params)
     
-    print(best_params)
+    print("best_params: ", best_params)
     return pred
 
 

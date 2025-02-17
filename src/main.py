@@ -1,4 +1,5 @@
 import argparse
+import timeit
 
 import numpy as np
 import pandas as pd
@@ -32,6 +33,8 @@ if __name__ == "__main__":
     X_test = 2 - bed_test.T.compute()
     X_test_scale = X_test - np.mean(X_test, axis=0)
 
+
+    time_begin = timeit.default_timer()
     pred = run_wkrr(X_train_scale, 
                     y_train, 
                     X_test_scale, 
@@ -39,10 +42,11 @@ if __name__ == "__main__":
                     n_splits=args.nfolds, 
                     n_repeats=args.nrepeats, 
                     n_jobs=args.njobs)
+    print("Total elapse: ", timeit.default_timer()-time_begin)
     
     pd.DataFrame({
         'fid': fam_test['fid'], 
         'iid': fam_test['iid'], 
         'prediction': pred
-    }).to_csv("pred.csv", index=False, sep=" ")
+    }).to_csv("pred.txt", index=False, sep=" ")
 

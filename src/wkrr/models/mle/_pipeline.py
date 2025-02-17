@@ -22,12 +22,20 @@ def fit_optimization_w(UTw, UTy, S, n_intervals=10, ldelta_lb=-5, ldelta_ub=5):
     candidate_indices = [i for i in np.arange(n_intervals-1) if not np.isinf(mle_1st_grid[i]) and np.sign(mle_1st_grid[i]) != np.sign(mle_1st_grid[i+1])]
     candidate_ldeltas = ldelta_grid[candidate_indices]
 
-    # find root on first derivative by Brent
-    brent_roots = np.ones(candidate_ldeltas.size) * np.inf
-    for i, ldelta in enumerate(candidate_ldeltas):
-        brent_roots[i] = sp.optimize.brentq(
-            eval_mle_1st_cython_w, ldelta, ldelta+1, args=(S, UTw, UTy), full_output=False)
+
+    # find root of 1st derivative
+    if candidate_ldeltas.size > 0:  # root of 1st
+        brent_roots = np.ones(candidate_ldeltas.size) * np.inf
+        for i, ldelta in enumerate(candidate_ldeltas):
+            brent_roots[i] = sp.optimize.brentq(
+                eval_mle_1st_cython_w, ldelta, ldelta+1, args=(S, UTw, UTy), full_output=False)
     
+    else:  # no root of 1st
+        lb_1st = eval_mle_1st_cython_w(ldelta_lb, S, UTw, UTy)
+        ub_1st = eval_mle_1st_cython_w(ldelta_ub, S, UTw, UTy)
+
+        brent_roots = [ldelta_lb if np.abs(ub_1st) <= 1e-4 else ldelta_ub]
+
     # find the global optimal ldelta / mle
     opt_mles = np.array([eval_mle_cython_w(ldelta, S, UTw, UTy) for ldelta in brent_roots])
     mle_max = opt_mles.max()
@@ -47,12 +55,20 @@ def fit_optimization_x(UTw, UTx, UTy, S, n_intervals=10, ldelta_lb=-5, ldelta_ub
     candidate_indices = [i for i in np.arange(n_intervals-1) if not np.isinf(mle_1st_grid[i]) and np.sign(mle_1st_grid[i]) != np.sign(mle_1st_grid[i+1])]
     candidate_ldeltas = ldelta_grid[candidate_indices]
 
-    # find root on first derivative by Brent
-    brent_roots = np.ones(candidate_ldeltas.size) * np.inf
-    for i, ldelta in enumerate(candidate_ldeltas):
-        brent_roots[i] = sp.optimize.brentq(
-            eval_mle_1st_cython_x, ldelta, ldelta+1, args=(S, UTw, UTx, UTy), full_output=False)
+
+    # find root of 1st derivative
+    if candidate_ldeltas.size > 0:  # root of 1st
+        brent_roots = np.ones(candidate_ldeltas.size) * np.inf
+        for i, ldelta in enumerate(candidate_ldeltas):
+            brent_roots[i] = sp.optimize.brentq(
+                eval_mle_1st_cython_x, ldelta, ldelta+1, args=(S, UTw, UTx, UTy), full_output=False)
     
+    else:  # no root of 1st
+        lb_1st = eval_mle_1st_cython_x(ldelta_lb, S, UTw, UTx, UTy)
+        ub_1st = eval_mle_1st_cython_x(ldelta_ub, S, UTw, UTx, UTy)
+
+        brent_roots = [ldelta_lb if np.abs(ub_1st) <= 1e-4 else ldelta_ub]
+
     # find the global optimal ldelta / mle
     opt_mles = np.array([eval_mle_cython_x(ldelta, S, UTw, UTx, UTy) for ldelta in brent_roots])
     mle_max = opt_mles.max()
